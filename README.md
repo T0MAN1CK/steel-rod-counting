@@ -157,6 +157,14 @@ Preparation scripts are under `scripts/data_preparation/`; `scripts/compare_runs
 
 Different learning rates were also tested during hyperparameter tuning. The retained configuration, with learning rate `0.0001`, gave the best observed overall outcome among the configurations tried. Limited GPU resources and available time restricted the search; this was a small experimental comparison, not an exhaustive search for optimal hyperparameters.
 
+A further run used threshold `0.6` for validation/checkpoint selection during training. Its recorded test evaluation used 1920 x 1080 input and inference threshold 0.6, giving MAE **34.0526**. The original supplied pipeline remains best observed at **8.0526**, using selection threshold 0.5 and inference threshold 0.65 at 1024 x 768. Input scale/aspect ratio and patience also differed, so this does not isolate threshold effects. Details are in the [report](TECHNICAL_REPORT.md#additional-checkpoint-selection-threshold-experiment).
+
+## Next steps (planned)
+
+- **Dockerization:** package the pinned runtime and CLI, with CPU/GPU variants and mounted model/input/output directories. Verify that container predictions match the supplied model before distribution.
+- **Deployment:** export model-only weights with versioned preprocessing/counting settings, add a small inference API if needed, measure latency/memory, and monitor failures and changing input conditions. These features are proposed; the current working interface is the local CLI.
+- **Better training data and models:** audit ambiguous labels, add verified shaft-only negative examples and more camera/lighting/scale diversity, split by capture session, and run a budgeted validation-based hyperparameter search across multiple seeds. Keep a new test set untouched. See the [deployment and training plan](TECHNICAL_REPORT.md#deployment-plan).
+
 ## AI tools
 
 I used AI for research, to set up the environment for GPU training, and to make modifications to the source code during development. AI-assisted changes and recommendations were checked through dependency checks, unit tests, CPU/CUDA preflight checks, validation and inference metrics, and visual inspection of prediction overlays.

@@ -85,6 +85,16 @@ Seed variation changed initialization, sample order and augmentation. More scene
 
 The seed-42, patience-15 model had validation MAE 1.7667 at threshold 0.5, 1.5245 at 0.6 and 1.5052 at 0.65. Raising a threshold removes weak false peaks and weak true rods; lowering it can add both. Seed 43 with patience 15 had test MAE 9.6316 at 0.65 versus 12.7368 at 0.6, so a lower threshold was not universally better.
 
+### Additional checkpoint-selection threshold experiment
+
+A further sigma-3 patch run used seed 42, batch 8, learning rate 0.0001, no zoom/stretch, patience 15 and **threshold 0.6 during validation/checkpoint selection**, rather than 0.5. It selected epoch 83, with selection MAE approximately 1.456 as rounded in the console, and stopped at epoch 98. This threshold controlled counts, checkpoint selection and early stopping; the gradient objective remained weighted heatmap MSE.
+
+The recorded inference then used **1920 x 1080 input and threshold 0.6**, giving full-photo MAE **34.0526**, RMSE **43.8808** and bias **-7.3158**, with 8,140 predictions against 8,279 annotations. This did not improve on the supplied pipeline's MAE of 8.0526 at 1024 x 768 and threshold 0.65, so the supplied original configuration remains preferred.
+
+This is not a threshold-only comparison: patience, inference size and inference threshold also differ from the preferred setup. Resizing the original 4:3 photos to 1920 x 1080 additionally changes aspect ratio to 16:9. The result therefore does not establish that selection threshold 0.6 alone causes worse performance. An isolated comparison would hold all other settings fixed and evaluate the selected checkpoints with the same preprocessing and counting threshold on validation. The console-rounded selection MAE is not directly comparable to validation metrics reported at a different threshold.
+
+### Further input-scale observations
+
 For seed 42 with patience 15, native 4K inference at 0.65 gave MAE 324.3158, whole-photo 256 x 256 gave 295.6842, and 1024 x 768 gave 8.6842. Patch dimensions should not be confused with an appropriate whole-scene resize. These checks exposed sensitivity to apparent rod size.
 
 The test set was repeatedly examined, so these are exploratory comparisons. An untouched capture-session test set is needed for an unbiased estimate. No significance claim is made from 19 photos. Changes in sigma/threshold, batch, sample units and selection policies are stated rather than presented as fully isolated comparisons.
@@ -95,6 +105,7 @@ Start with the README training command, use a fresh `--run-dir`, and change the 
 
 - **Sigma:** generate a separate target root with `create_heatmaps.py --sigma 2` or another width; select it with `--heatmaps`. The original sigma-2 run used threshold 0.3 and patience 15.
 - **Seed/patience:** use `--seed 43`, `--patience 15` or `--patience 30`, holding other settings fixed.
+- **Checkpoint-selection threshold:** use `--peak-threshold 0.6` instead of 0.5 while keeping other training settings fixed. Evaluate both saved models with identical input size and inference threshold; changing this argument does not turn count MAE into the gradient loss.
 - **Zoom/crop:** `--zoom 0.2 --stretch 0` applies uniform 0.8–1.2 scaling to 50% of patches, with random crop/padding. Centres transform and fixed-sigma targets regenerate. Validation stays unchanged.
 - **Stretching:** `--stretch 0.15 --zoom 0` compresses axes independently and centre-pads RGB/targets. It is optional, not the final configuration; no separate measured result is claimed.
 
@@ -156,7 +167,23 @@ Tests cover augmentation alignment, float targets, loss gradients, peaks/matchin
 
 Strengths are leakage-aware grouping, focused modules, point-supervised counting, preserved settings and local visual reports. Weaknesses are scale sensitivity, shaft/end ambiguity, possible label issues and limited independent evaluation.
 
-Priorities are auditing ambiguous training/validation labels, verified shaft-only hard negatives, untouched session-level evaluation, more seeds with fixed settings and validation-based scale comparisons. Model-only export, measured latency/memory comparisons, smaller encoders and quantization are possible deployment improvements. New losses/merging rules need controlled evaluation.
+The next steps below are proposed work, not features already implemented or measured. The supplied CLI remains the working demonstration and the archived checkpoint remains the reference model.
+
+## Deployment plan
+
+1. **Containerize the existing application.** Add a small Dockerfile with pinned Python/library versions, a non-root runtime user and a CLI entry point. Exclude the dataset ZIP, extracted data, experiments and caches from the build context; mount the model, input images and output directory instead. Provide CPU and CUDA runtime variants. GPU execution still needs a compatible host driver. Run the same reference images inside/outside the container and compare counts before publishing an image. Docker's [Python guide](https://docs.docker.com/guides/python/) provides the packaging pattern.
+2. **Create an inference artifact.** Export only learned model parameters plus the encoder and explicit normalization, input-size, peak-threshold and suppression settings. Keep the original full training checkpoint separately for reproducibility. Adapt the loader for the smaller artifact and verify matching heatmaps/counts; the current loader expects the existing checkpoint structure. PyTorch documents [saving parameters for inference](https://docs.pytorch.org/tutorials/beginner/saving_loading_models.html). Version the artifact and record its checksum so deployments can be reproduced or rolled back.
+3. **Add a small serving interface when needed.** Wrap the existing prediction functions in an HTTP endpoint that returns counts, centre coordinates and an optional overlay. Load the model once at startup, preserve evaluation/inference mode, validate image format/dimensions, and limit concurrent requests to available memory. Include a readiness check after loading the artifact and a simple CLI smoke test. A web service is an additional interface, not a prerequisite for the current submission.
+4. **Benchmark before optimizing.** Measure end-to-end median/tail latency, throughput, memory and artifact size on the intended CPU/GPU, including preprocessing and peak extraction. Compare a smaller encoder, supported export runtime or quantization only if needed, and recheck count/localization metrics after each change. Smaller/faster is not assumed to preserve accuracy. Set acceptance targets from the actual use case rather than inventing performance claims.
+5. **Monitor operation and retain review feedback.** Record model version, preprocessing settings, latency, errors and count distributions. Review sampled predictions when camera distance, lighting or scene density changes. Accuracy monitoring needs newly annotated examples; unlabeled traffic alone cannot provide MAE. Keep a known-good version for rollback and require evaluation before promoting a retrained model. This can use local logs without a hosted tracking service.
+
+## Training improvements
+
+1. **Improve supervision first.** Review ambiguous or missing training/validation centres and define which visible rod ends count. Add verified shaft-only negative crops to address highlights/ribs without labeling genuine ends as background. Record label revisions and retain the previous data version for comparison.
+2. **Increase representative diversity.** Collect more cameras, distances, angles, lighting conditions, densities and empty scenes. Group by capture session before splitting, audit near-duplicates, and reserve a genuinely untouched test collection. More images from the same scene are not a substitute for independent examples.
+3. **Resolve scale sensitivity on validation.** Compare aspect-ratio-preserving resize policies and carefully chosen scale augmentation while preserving point coordinates and fixed-sigma targets. If testing overlapping tiles, validate boundary handling and duplicate suppression. The failed scene/zoom experiments mean that more context or augmentation cannot simply be assumed to help.
+4. **Use a controlled tuning budget.** Compare a small declared set of learning rates, sigma widths, batch sizes and selection/evaluation thresholds, then repeat promising settings across seeds. Keep the split, stopping budget and evaluation preprocessing comparable. Report variation as well as the best score, and use validation rather than repeated test feedback for decisions. Hardware/time constraints still determine the feasible search.
+5. **Evaluate changes against the real failure modes.** Track count MAE/RMSE/bias and point precision/recall alongside empty/sparse/dense-scene errors and overlays. Test alternative losses or encoders only after establishing this reference. Do not sum the current heatmaps as a count loss or assume nearby peaks should always merge. Promote a new model only when the relevant validation improvements transfer to an independent final evaluation.
 
 ## AI tools
 
