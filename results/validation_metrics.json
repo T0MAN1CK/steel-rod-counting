@@ -1,0 +1,14 @@
+{
+  "checkpoint": "runs\\sigma3\\seed42_patience30_20261028_133154\\best.pt",
+  "epoch": 83,
+  "peak_threshold": 0.65,
+  "heatmaps": "data\\prepared\\training_v1\\heatmaps_sigma3",
+  "split": "validation",
+  "count_mae": 1.5081723625557206,
+  "count_rmse": 2.8260621088522875,
+  "count_bias": 0.04606240713224369,
+  "precision": 0.9431982792678109,
+  "recall": 0.9444835164835165,
+  "f1": 0.9438404603456986,
+  "loss": 0.009333959147181877
+}

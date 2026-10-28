@@ -1,0 +1,54 @@
+{
+  "data": "data\\prepared\\training_v1",
+  "heatmap_dir": "data\\prepared\\training_v1\\heatmaps_sigma3",
+  "run_dir": "runs\\sigma3\\seed42_patience30_20261028_133154",
+  "validation_scenes": null,
+  "encoder": "resnet50",
+  "no_pretrained": false,
+  "device": "cuda",
+  "check_only": false,
+  "batch_size": 8,
+  "workers": 0,
+  "epochs": 100,
+  "patience": 30,
+  "min_delta": 0.001,
+  "lr": 0.0001,
+  "weight_decay": 0.0001,
+  "loss_alpha": 10,
+  "peak_threshold": 0.5,
+  "min_distance": 3,
+  "match_tolerance": 5,
+  "seed": 42,
+  "no_augmentation": false,
+  "stretch": 0.0,
+  "no_amp": false,
+  "zoom": 0.0,
+  "preview_count": 4,
+  "torch_version": "2.11.0+cu128",
+  "python": "3.13.15 (tags/v3.13.15:4061bc4, Aug  5 2026, 13:05:39) [MSC v.1944 64 bit (AMD64)]",
+  "gpu": "NVIDIA GeForce RTX 4060 Ti",
+  "split_sha256": {
+    "train_labels.json": "fba9d2ee1d6c83cba7eb12f96cec08b2fee390e379e1060ffae48af5c19620f0",
+    "validation_labels.json": "b233b6bf646b5a0bf3c1d5c653edca3afa796f7ee9c51be9397052185ddde07f"
+  },
+  "heatmaps": {
+    "sigma": 3.0,
+    "combination": "maximum",
+    "format": "float32 TIFF",
+    "support": "square neighbourhood extending approximately 3 sigma",
+    "splits": {
+      "train": {
+        "images": 2721,
+        "points": 84257,
+        "preview": "Photo (267)_5.jpg"
+      },
+      "validation": {
+        "images": 673,
+        "points": 22750,
+        "preview": "Photo (173)_7.jpg"
+      }
+    }
+  },
+  "git_commit": "c10a2651f965000a1aaec1e3cdd78b0276dcd1b4",
+  "git_dirty": true
+}
