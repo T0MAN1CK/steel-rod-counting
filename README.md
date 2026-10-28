@@ -155,6 +155,8 @@ Add `--device cpu` if needed. Outputs include metrics and fixed validation PNGs.
 
 Preparation scripts are under `scripts/data_preparation/`; `scripts/compare_runs.py` compares metrics/settings. Use `& $python -m rod_counting.train --help` for arguments. Separate `--heatmaps` and `--run-dir` paths preserve experiments. The [report](TECHNICAL_REPORT.md#experiments-and-comparisons) documents sigma, seed, threshold, patience, zoom/crop, scene training and scene-validation experiments.
 
+Different learning rates were also tested during hyperparameter tuning. The retained configuration, with learning rate `0.0001`, gave the best observed overall outcome among the configurations tried. Limited GPU resources and available time restricted the search; this was a small experimental comparison, not an exhaustive search for optimal hyperparameters.
+
 ## AI tools
 
 I used AI for research, to set up the environment for GPU training, and to make modifications to the source code during development. AI-assisted changes and recommendations were checked through dependency checks, unit tests, CPU/CUDA preflight checks, validation and inference metrics, and visual inspection of prediction overlays.

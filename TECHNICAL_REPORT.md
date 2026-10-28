@@ -61,6 +61,8 @@ Inference resizes each whole photo to 1024 x 768 and runs one forward pass, padd
 
 ## Experiments and comparisons
 
+Hyperparameter tuning also included trials with different learning rates. The retained configuration uses AdamW learning rate `0.0001` and gave the best observed overall outcome among the configurations tried. The additional learning-rate trials are not included in the archived comparison below, so no unrecorded rates or numerical scores are attributed to them. Limited GPU resources and available time constrained the number of settings and repeat runs; the selected configuration is the best observed in this search, not a claim of globally optimal hyperparameters.
+
 Experiments preserve photo grouping and use separate targets/runs. Sigma-2 training used threshold 0.3; sigma-3 used 0.5. Both settings changed, so this does not isolate width alone. The sigma-2 checkpoint had validation patch MAE 2.2571 at 0.3 and 1.6360 when re-evaluated at 0.5. No full-photo test result is claimed for that checkpoint.
 
 Results below use the same 19 photos at 1024 x 768 and threshold 0.65 except where stated.
