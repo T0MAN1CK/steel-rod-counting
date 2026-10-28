@@ -1,0 +1,31 @@
+# Python environments and generated package files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+.ipynb_checkpoints/
+
+# Local datasets, checkpoints, logs and reports
+data/
+datasets/
+runs/
+artifacts/
+checkpoints/
+cache/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Credentials and local settings
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
